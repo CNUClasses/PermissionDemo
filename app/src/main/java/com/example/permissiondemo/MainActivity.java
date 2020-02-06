@@ -4,12 +4,14 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,9 +41,8 @@ public class MainActivity extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             // Permission is already available, start camera preview
-            Snackbar.make(mLayout,
-                    "Permission already there",
-                    Snackbar.LENGTH_SHORT).show();
+            Toast.makeText(this,"Permission already there",Toast.LENGTH_LONG).show();
+
             startCamera();
         } else {
             // Permission is missing and must be requested.
@@ -59,15 +60,13 @@ public class MainActivity extends AppCompatActivity {
             // Request for camera permission.
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission has been granted. Start camera preview Activity.
-                Snackbar.make(mLayout, "Permission granted",
-                        Snackbar.LENGTH_SHORT)
-                        .show();
+                Toast.makeText(this,"Permission granted",Toast.LENGTH_LONG).show();
+
                 startCamera();
             } else {
                 // Permission request was denied.
-                Snackbar.make(mLayout, "Permission Denied",
-                        Snackbar.LENGTH_SHORT)
-                        .show();
+                Toast.makeText(this,"Permission Denied",Toast.LENGTH_LONG).show();
+
             }
         }
         // END_INCLUDE(onRequestPermissionsResult)
@@ -85,8 +84,8 @@ public class MainActivity extends AppCompatActivity {
             // Provide an additional rationale to the user if the permission was not granted
             // and the user would benefit from additional context for the use of the permission.
             // Display a SnackBar with cda button to request the missing permission.
-            Snackbar.make(mLayout, "camera access required",
-                    Snackbar.LENGTH_INDEFINITE).show();
+            Toast.makeText(this, "camera access required",Toast.LENGTH_LONG).show();
+
         }
         // Request the permission
         ActivityCompat.requestPermissions(MainActivity.this,
