@@ -3,11 +3,13 @@ package com.example.permissiondemo;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.provider.MediaStore;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import com.google.android.material.snackbar.Snackbar;
 
 import android.os.Bundle;
 import android.view.View;
@@ -15,7 +17,11 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int PERMISSION_REQUEST_CAMERA = 0;
+    //all the permissions we need (although we are only using the camera)
+    //this demonstrates how to ask for a bunch of permissions at one time
+    private static final String[] PERMISSIONS={Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.CAMERA};
+    private static final int PERMS_REQ_CODE = 200;
+
     private View mLayout;
 
     @Override
@@ -36,62 +42,67 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showCameraPreview() {
-        // BEGIN_INCLUDE(startCamera)
-        // Check if the Camera permission has been granted
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
-            // Permission is already available, start camera preview
-            Toast.makeText(this,"Permission already there",Toast.LENGTH_LONG).show();
+        //TODO verify that app has permission to use camera
+        //do we have needed permissions? if not
+        if (!verifyPermissions())
+            return;
 
-            startCamera();
-        } else {
-            // Permission is missing and must be requested.
-            requestCameraPermission();
-        }
-        // END_INCLUDE(startCamera)
+        startCamera();
     }
+    /**
+     * Verify that the specific list of permisions requested have been granted, otherwise ask for
+     * these permissions.  Note this is coarse in that I assumme I need them all
+     */
+    private boolean verifyPermissions() {
 
+        //loop through all permissions seeing if they are ALL granted
+        //iff ALL granted then return true
+        boolean allGranted = true;
+        for (String permission:PERMISSIONS){
+            //a single false causes allGranted to be false
+            allGranted = allGranted && (ActivityCompat.checkSelfPermission(this, permission ) == PackageManager.PERMISSION_GRANTED);
+        }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        // BEGIN_INCLUDE(onRequestPermissionsResult)
-        if (requestCode == PERMISSION_REQUEST_CAMERA) {
-            // Request for camera permission.
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission has been granted. Start camera preview Activity.
-                Toast.makeText(this,"Permission granted",Toast.LENGTH_LONG).show();
+        if (!allGranted) {
+            //OH NO!, missing some permissions, offer rationale if needed
+            for (String permission : PERMISSIONS) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+                    Snackbar.make(findViewById(android.R.id.content),
+                            permission+" WE GOTTA HAVE IT!", Snackbar.LENGTH_LONG).show();
+                }
+            }
 
-                startCamera();
-            } else {
-                // Permission request was denied.
-                Toast.makeText(this,"Permission Denied",Toast.LENGTH_LONG).show();
-
+            //Okay now finally ask for them
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(PERMISSIONS, PERMS_REQ_CODE);
             }
         }
-        // END_INCLUDE(onRequestPermissionsResult)
+
+        //and return false until they are granted
+        return allGranted;
     }
 
-    /**
-     * Requests the {@link android.Manifest.permission#CAMERA} permission.
-     * If an additional rationale should be displayed, the user has to launch the request from
-     * a SnackBar that includes additional information.
+    /***
+     * callback from requestPermissions
+     * @param permsRequestCode  user defined code passed to requestpermissions used to identify what callback is coming in
+     * @param permissions       list of permissions requested
+     * @param grantResults      //results of those requests
      */
-    private void requestCameraPermission() {
-        // Permission has not been granted and must be requested.
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                Manifest.permission.CAMERA)) {
-            // Provide an additional rationale to the user if the permission was not granted
-            // and the user would benefit from additional context for the use of the permission.
-            // Display a SnackBar with cda button to request the missing permission.
-            Toast.makeText(this, "camera access required",Toast.LENGTH_LONG).show();
+    @Override
+    public void onRequestPermissionsResult(int permsRequestCode, String[] permissions, int[] grantResults) {
 
+        boolean allGranted = false;
+        switch (permsRequestCode) {
+            case PERMS_REQ_CODE:
+                for (int result: grantResults){
+                    allGranted = allGranted&&(result== PackageManager.PERMISSION_GRANTED);
+                }
+                break;
         }
-        // Request the permission
-        ActivityCompat.requestPermissions(MainActivity.this,
-                new String[]{Manifest.permission.CAMERA},
-                PERMISSION_REQUEST_CAMERA);
-    }
 
+        if (allGranted)
+            //TODO do your work here
+            startCamera();
+    }
 
 }
