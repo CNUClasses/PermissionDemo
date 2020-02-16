@@ -22,26 +22,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String[] PERMISSIONS={Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.CAMERA};
     private static final int PERMS_REQ_CODE = 200;
 
-    private View mLayout;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mLayout = findViewById(R.id.main_layout);
     }
 
     public void startCamera(View view) {
-        showCameraPreview();
-    }
-
-    public void startCamera() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivity(intent);
-    }
-
-    private void showCameraPreview() {
         //TODO verify that app has permission to use camera
         //do we have needed permissions? if not
         if (!verifyPermissions())
@@ -49,6 +36,12 @@ public class MainActivity extends AppCompatActivity {
 
         startCamera();
     }
+
+    public void startCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivity(intent);
+    }
+
     /**
      * Verify that the specific list of permisions requested have been granted, otherwise ask for
      * these permissions.  Note this is coarse in that I assumme I need them all
@@ -91,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int permsRequestCode, String[] permissions, int[] grantResults) {
 
-        boolean allGranted = false;
+        boolean allGranted = true;
         switch (permsRequestCode) {
             case PERMS_REQ_CODE:
                 for (int result: grantResults){
